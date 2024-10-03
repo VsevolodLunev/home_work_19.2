@@ -6,9 +6,11 @@ from django.db import models
 class Product(models.Model):
     updated_at = models.DateField(
         verbose_name="Дата последнего изменения в базе данных",
+        auto_now=True
     )
     created_at = models.DateField(
         verbose_name="Дата записи в базу данных",
+        auto_now=True
     )
     description = models.TextField(
         verbose_name="Описание товара",
@@ -16,7 +18,6 @@ class Product(models.Model):
         null=True,
     )
     preview = models.ImageField(
-
         upload_to='catalog/photo',
         blank=True,
         null=True,
