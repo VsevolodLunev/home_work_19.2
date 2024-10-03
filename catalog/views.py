@@ -2,7 +2,7 @@ from django.shortcuts import render
 
 
 def home(request):
-    return render(request, 'home.html')
+    return render(request, 'project_sky/home.html')
 
 
 def contacts(request):
