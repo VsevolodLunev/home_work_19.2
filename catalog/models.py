@@ -4,11 +4,6 @@ from django.db import models
 
 
 class Product(models.Model):
-    manufactured_at = models.DateField(
-        verbose_name="Дата производства продукта",
-        blank=True,
-        null=True,
-    )
     updated_at = models.DateField(
         verbose_name="Дата последнего изменения в базе данных",
         auto_now=True
