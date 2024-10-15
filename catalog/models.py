@@ -18,7 +18,7 @@ class Product(models.Model):
         null=True,
     )
     preview = models.ImageField(
-        upload_to='catalog/photo',
+        upload_to='img',
         blank=True,
         null=True,
         verbose_name="Фото товара",

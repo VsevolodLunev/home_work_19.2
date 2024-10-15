@@ -1,0 +1,31 @@
+{% extends 'catalog/home.html'%}
+{% load static %}
+{% load my_tags %}
+{% block content %}
+<div class="row text-center">
+    <div class="col-3">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">{{ product.name }}</h4>
+            </div>
+            <div class="card-body">
+                {% if product.preview %}
+                <img src="{{ product.preview | media_filter }}" class="card-img-top" alt="{{ product.name }}">
+                {% else %}
+                <img src="{% static 'photo/netphoto.jpg' %}" class="card-img-top" alt="Изобажение недоступно">
+                {% endif %}
+
+                <ul class="list-unstyled mt-3 mb-4 text-start m-3">
+                    <li>Описание товара - {{product.description}}</li>
+                    <li>Категория - {{product.category}}</li>
+                    <li>Цена - {{ product.price }} руб.</li>
+                </ul>
+                <div class="btn-group">
+                    <a href="{% url 'catalog:buy_product' %}" class="btn btn-primary active" aria-current="page">Купить</a>
+                    <a href="{% url 'catalog:home' %}" class="btn btn-primary">Назад</a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

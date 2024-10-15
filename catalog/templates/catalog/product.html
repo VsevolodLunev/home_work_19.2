@@ -1,0 +1,110 @@
+{% extends 'catalog/home.html'%}
+{% load static %}
+{% load my_tags %}
+{% block content %}
+<style>
+    .card-img-top {
+        width: 100%;
+        height: 250px;
+        object-fit: cover;
+    }
+
+    .card {
+        min-height: 580px;
+    }
+
+    .card-body {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+        height: 200px;
+    }
+
+    .card-text {
+        max-height: 80px;
+        overflow: hidden;
+        text-overflow: ellipsis;
+    }
+
+    .card-body .btn {
+        align-self: flex-start;
+        margin-top: auto;
+    }
+
+    .pagination {
+        display: flex;
+        justify-content: center;
+        padding: 20px 0;
+    }
+
+    .pagination a.pagination span {
+        margin: 0 5px;
+        padding: 8px 16px;
+        text-decoration: none;
+        background-color: #f4f4f4;
+        color: #007bff;
+        border-radius: 4px;
+    }
+
+    .pagination a:hover {
+        background-color: #007bff;
+        color: white;
+    }
+
+    .pagination .active {
+        background-color: #007bff;
+        color: white;
+    }
+</style>
+<div class="row text-center">
+    {% for product in page_obj%}
+    <div class="col-3">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">{{ product.name }}</h4>
+            </div>
+            <div class="card-body">
+                {% if product.preview %}
+                <img src="{{ product.preview | media_filter }}" class="card-img-top" alt="{{ product.name }}">
+                {% else %}
+                <img src="{% static 'photo/netphoto.jpg' %}" class="card-img-top" alt="Изобажение недоступно">
+                {% endif %}
+
+                <ul class="list-unstyled mt-3 mb-4 text-start m-3">
+                    <li>Описание товара - {{ product.description|text_cropping }}</li>
+                    <li>Категория - {{product.category}}</li>
+                    <li>Цена - {{ product.price }} руб.</li>
+                </ul>
+                <div class="btn-group">
+                    <a href="{% url 'catalog:buy_product' %}" class="btn btn-primary active" aria-current="page">Купить</a>
+                    <a href="{% url 'catalog:info_product' product.pk %}" class="btn btn-primary">Подробнее</a>
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+    <div class="pagination">
+        {% if page_obj.has_previous %}
+        <a href="?page=1">&laquo; Первая</a>
+        <a href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
+        {% endif %}
+
+        {% for num in page_obj.paginator.page_range %}
+        {% if page_obj.number == num %}
+        <span class="active">{{ num }}</span>
+        {% else %}
+        <a href="?page={{ num }}">{{ num }}</a>
+        {% endif %}
+        {% endfor %}
+
+        {% if page_obj.has_next %}
+        <a href="?page={{ page_obj.next_page_number }}">Следующая</a>
+        <a href="?page={{ page_obj.paginator.num_pages }}">Последняя &raquo;</a>
+        {% endif %}
+    </div>
+
+    <div class="text-center mt-4">
+        <a href="{% url 'catalog:home' %}" class="btn btn-secondary">Назад на Главную</a>
+    </div>
+</div>
+{% endblock %}
