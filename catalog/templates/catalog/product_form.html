@@ -1,11 +1,20 @@
 {% extends "catalog/home.html" %}
 {% load my_tags %}
 {% block content %}
+
 <div class="container mt-5">
-    <h2 style="font-weight: normal;" class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">Добавление
-        продукта</h2>
+    <h2 style="font-weight: normal;" class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+        {% if object %}
+        Редактирование
+        продукта
+        {% else %}
+        Добавление
+        продукта
+        {% endif %}
+    </h2>
     <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
         {% csrf_token %}
+
         <div class="mb-3">
             {{ form.name.label_tag }}
             {{ form.name|add_class:"form-control" }}
@@ -26,7 +35,18 @@
             {{ form.price.label_tag }}
             {{ form.price|add_class:"form-control" }}
         </div>
-        <button type="submit" class="btn btn-primary">Добавить продукт</button>
+
+
+        <button type="submit" class="btn btn-primary">
+            {% if object %}
+            Сохраниеть изменения
+            {% else %}
+            Добавить продукт
+            {% endif %}
+        </button>
     </form>
+    <div class="text-center mt-4">
+        <a href="{% url 'catalog:home' %}" class="btn btn-secondary">Назад на Главную</a>
+    </div>
 </div>
 {% endblock %}

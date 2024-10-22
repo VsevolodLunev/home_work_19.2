@@ -2,6 +2,7 @@
 {% load static %}
 {% load my_tags %}
 {% block content %}
+
 <style>
     .card-img-top {
         width: 100%;
@@ -57,7 +58,7 @@
     }
 </style>
 <div class="row text-center">
-    {% for product in page_obj%}
+    {% for product in object_list %}
     <div class="col-3">
         <div class="card mb-4 box-shadow">
             <div class="card-header">
@@ -76,8 +77,8 @@
                     <li>Цена - {{ product.price }} руб.</li>
                 </ul>
                 <div class="btn-group">
-                    <a href="{% url 'catalog:buy_product' %}" class="btn btn-primary active" aria-current="page">Купить</a>
-                    <a href="{% url 'catalog:info_product' product.pk %}" class="btn btn-primary">Подробнее</a>
+                    <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-primary">Редактировать</a>
+                    <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-primary">Подробнее</a>
                 </div>
             </div>
         </div>
@@ -103,8 +104,6 @@
         {% endif %}
     </div>
 
-    <div class="text-center mt-4">
-        <a href="{% url 'catalog:home' %}" class="btn btn-secondary">Назад на Главную</a>
-    </div>
+
 </div>
 {% endblock %}

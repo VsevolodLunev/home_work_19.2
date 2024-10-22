@@ -1,9 +1,13 @@
 from django.db import models
-
 # Create your models here.
 
 
 class Product(models.Model):
+    manufactured_at = models.DateField(
+        verbose_name="Дата производства продукта",
+        blank=True,
+        null=True,
+    )
     updated_at = models.DateField(
         verbose_name="Дата последнего изменения в базе данных",
         auto_now=True
@@ -65,3 +69,49 @@ class Category(models.Model):
     class Meta:
         verbose_name = "Категория"
         verbose_name_plural = "Категории"
+
+
+class Blog(models.Model):
+    heading = models.TextField(
+        max_length=100,
+        verbose_name="Заголовок"
+    )
+    slug = models.CharField(
+        max_length=100,
+        verbose_name="содержимое",
+        unique=True,
+    )
+    content = models.TextField(
+        verbose_name="Содержимое"
+    )
+    preview = models.ImageField(
+        upload_to='img',
+        blank=True,
+        null=True,
+        verbose_name="Фото товара"
+    )
+    count_views = models.PositiveIntegerField(
+        verbose_name="количество просмотров"
+    )
+    date_of_creation = models.DateTimeField(
+        verbose_name="дата создания",
+        auto_now_add=True
+    )
+    sing_of_publication = models.BooleanField(
+        verbose_name="признак публикации",
+        default=True
+    )
+
+
+class Contact(models.Model):
+    name = models.CharField(
+        max_length=100,
+        verbose_name="Имя"
+    )
+    phone_number = models.CharField(
+        max_length=100,
+        verbose_name="Номер телефона"
+    )
+    message = models.TextField(
+        verbose_name="Сообщение"
+    )

@@ -1,0 +1,43 @@
+{% extends "catalog/home.html" %}
+{% load my_tags %}
+{% block content %}
+
+<div class="container mt-5">
+    <h2 style="font-weight: normal;" class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
+        {% if object %}
+        Редактирование
+        {% else %}
+        Комментарий
+        {% endif %}
+    </h2>
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mb-3">
+            {{ form.heading.label_tag }}
+            {{ form.heading|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            {{ form.content.label_tag }}
+            {{ form.content|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            {{ form.preview.label_tag }}
+            {{ form.preview|add_class:"form-control" }}
+        </div>
+        <div class="mb-3">
+            {{ form.sing_of_publication.label_tag }}
+            {{ form.sing_of_publication|add_class:"form-control" }}
+        </div>
+        <button type="submit" class="btn btn-primary">
+            {% if object %}
+            Сохраниеть изменения
+            {% else %}
+            Добавить комментарий
+            {% endif %}
+        </button>
+    </form>
+    <div class="text-center mt-4">
+        <a href="{% url 'catalog:home' %}" class="btn btn-secondary">Назад на Главную</a>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,53 @@
+{% extends 'catalog/home.html' %}
+
+{% load static %}
+{% load my_tags %}
+
+{% block content %}
+<style>
+       <!-- your styles here -->
+</style>
+
+<div class="text-center">
+    <a href="{% url 'catalog:blog_create' %}" type="submit" class="btn btn-primary">Написать комментарий</a>
+</div>
+
+<div class="row text-center">
+    {% if object_list %}
+    {% for blog in object_list %}
+    <div class="col-3">
+        <div class="card mb-4 box-shadow">
+            <div class="card-header">
+                <h4 class="my-0 font-weight-normal">{{ blog.heading }}</h4>
+            </div>
+            <div class="card-body">
+                {% if blog.preview %}
+                <img src="{{ blog.preview | media_filter }}" class="card-img-top" alt="{{ blog.name }}">
+                {% else %}
+                 <img src="{% static 'photo/netphoto.jpg' %}" class="card-img-top" alt="Изображение недоступно">
+                {% endif %}
+
+                <ul class="list-unstyled mt-3 mb-4 text-start m-3">
+                    <li>Дата создания - {{ blog.date_of_creation }}</li>
+                    <li>Содержание - {{ blog.content|text_cropping }}</li>
+                    <li>Просмотры - {{ blog.count_views }}</li>
+                </ul>
+                <div class="btn-group">
+                    {% if blog.slug %}
+                    <a href="{% url 'catalog:detail_blog' blog.slug %}" class="btn btn-primary">Подробнее</a>
+                    <a href="{% url 'catalog:update_blog' blog.slug %}" class="btn btn-primary">Редактировать</a>
+                    <form action="{% url 'catalog:delete_blog' blog.slug %}" method="post">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-primary">Удалить</button>
+                    </form>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+  {% else %}
+    <p>Нет блогов для отображения.</p>
+    {% endif %}
+</div>
+{% endblock %}
