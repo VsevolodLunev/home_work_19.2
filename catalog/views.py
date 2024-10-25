@@ -58,8 +58,9 @@ class BlogCreateView(CreateView):
 
     def form_valid(self, form):
         if form.is_valid():
-            obj = form.save()
-            obj.slug = slugify(obj.title)
+            obj = form.save(commit=False)
+            print(obj)
+            obj.slug = slugify(obj.heading)
             obj.save()
         return super().form_valid(form)
 
