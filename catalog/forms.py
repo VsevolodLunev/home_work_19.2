@@ -1,12 +1,12 @@
 from django import forms
-from catalog.models import Product
-from catalog.models import Blog
+from .models import Product
+from .models import Blog
 
 
 class ProductForm(forms.ModelForm):
     class Meta:
         model = Product
-        fields = {"name", "price", "category", "preview", "description"}
+        fields = ["name", "price", "category", "preview", "description", 'manufactured_at',]
 
 
 class BlogForm(forms.ModelForm):

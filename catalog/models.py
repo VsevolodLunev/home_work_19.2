@@ -1,5 +1,4 @@
 from django.db import models
-# Create your models here.
 
 
 class Product(models.Model):
@@ -14,7 +13,7 @@ class Product(models.Model):
     )
     created_at = models.DateField(
         verbose_name="Дата записи в базу данных",
-        auto_now=True
+        auto_now_add=True
     )
     description = models.TextField(
         verbose_name="Описание товара",
@@ -60,7 +59,7 @@ class Category(models.Model):
     name = models.CharField(
         max_length=100,
         verbose_name="Название категории",
-        help_text="Название категории",
+        help_text="Выберите категорию",
     )
 
     def __str__(self):
@@ -88,7 +87,7 @@ class Blog(models.Model):
         upload_to='img',
         blank=True,
         null=True,
-        verbose_name="Фото товара"
+        verbose_name="Фото товара",
     )
     count_views = models.PositiveIntegerField(
         verbose_name="количество просмотров",
@@ -111,7 +110,7 @@ class Contact(models.Model):
     )
     phone_number = models.CharField(
         max_length=100,
-        verbose_name="Номер телефона"
+        verbose_name="Номер телефона",
     )
     message = models.TextField(
         verbose_name="Сообщение"

@@ -5,7 +5,7 @@
 
 {% block content %}
 <style>
-       <!-- your styles here -->
+    <!-- your styles here -->
 </style>
 
 <div class="text-center">
@@ -24,7 +24,7 @@
                 {% if blog.preview %}
                 <img src="{{ blog.preview | media_filter }}" class="card-img-top" alt="{{ blog.name }}">
                 {% else %}
-                 <img src="{% static 'photo/netphoto.jpg' %}" class="card-img-top" alt="Изображение недоступно">
+                <img src="{% static 'photo/netphoto.jpg' %}" class="card-img-top" alt="Изображение недоступно">
                 {% endif %}
 
                 <ul class="list-unstyled mt-3 mb-4 text-start m-3">
@@ -46,7 +46,7 @@
         </div>
     </div>
     {% endfor %}
-  {% else %}
+    {% else %}
     <p>Нет блогов для отображения.</p>
     {% endif %}
 </div>

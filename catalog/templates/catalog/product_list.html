@@ -2,7 +2,6 @@
 {% load static %}
 {% load my_tags %}
 {% block content %}
-
 <style>
     .card-img-top {
         width: 100%;
@@ -38,7 +37,7 @@
         padding: 20px 0;
     }
 
-    .pagination a.pagination span {
+    .pagination a, .pagination span {
         margin: 0 5px;
         padding: 8px 16px;
         text-decoration: none;
@@ -72,6 +71,7 @@
                 {% endif %}
 
                 <ul class="list-unstyled mt-3 mb-4 text-start m-3">
+                    <li>Дата производства продукта - {{ product.manufactured_at }}</li>
                     <li>Описание товара - {{ product.description|text_cropping }}</li>
                     <li>Категория - {{product.category}}</li>
                     <li>Цена - {{ product.price }} руб.</li>
@@ -105,5 +105,6 @@
     </div>
 
 
+</div>
 </div>
 {% endblock %}

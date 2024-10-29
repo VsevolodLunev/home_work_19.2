@@ -1,4 +1,3 @@
-
 from django.urls import reverse_lazy, reverse
 from django.utils.text import slugify
 from django.views.generic import ListView, TemplateView, CreateView, DetailView, UpdateView, DeleteView
@@ -13,6 +12,7 @@ class ProductListView(ListView):
 
 
 class ContactsListView(TemplateView):
+    template_name = "catalog/contact_list.html"
 
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
@@ -59,7 +59,6 @@ class BlogCreateView(CreateView):
     def form_valid(self, form):
         if form.is_valid():
             obj = form.save(commit=False)
-            print(obj)
             obj.slug = slugify(obj.heading)
             obj.save()
         return super().form_valid(form)
