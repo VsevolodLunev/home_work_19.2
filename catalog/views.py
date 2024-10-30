@@ -1,9 +1,10 @@
+from django.forms import inlineformset_factory
 from django.urls import reverse_lazy, reverse
 from django.utils.text import slugify
 from django.views.generic import ListView, TemplateView, CreateView, DetailView, UpdateView, DeleteView
 
-
-from catalog.models import Product, Contact, Blog
+from catalog.forms import VersionForm
+from catalog.models import Product, Contact, Blog, Version
 
 
 class ProductListView(ListView):
@@ -26,19 +27,43 @@ class ProductDetailView(DetailView):
 
 class CreateProductListView(CreateView):
     model = Product
-    fields = ("name", "price", "category", "preview", "description")
+    fields = ("product_name", "price", "category", "preview", "product_description")
     success_url = reverse_lazy('catalog:home')
 
 
 class ProductUpdateView(UpdateView):
     model = Product
-    fields = ("name", "price", "category", "preview", "description")
+    fields = ("product_name", "price", "category", "preview", "product_description")
     success_url = reverse_lazy('catalog:home')
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        VersionFormset = inlineformset_factory(Product, Version, VersionForm, extra=1, can_delete=True)
+        if self.request.method == 'POST':
+            context_data['formset'] = VersionFormset(self.request.POST, instance=self.object)
+        else:
+            context_data['formset'] = VersionFormset(instance=self.object)
+        return context_data
+
+    def form_valid(self, form):
+        context_data = self.get_context_data()
+        formset = context_data['formset']
+        if form.is_valid() and formset.is_valid():
+            self.object = form.save()
+            formset.instance = self.object
+            formset.save()
+            return super().form_valid(form)
+        else:
+            return self.render_to_response(self.get_context_data(form=form, formset=formset))
 
 
 class BlogListView(ListView):
     model = Blog
-    queryset = Blog.objects.filter(slug__isnull=False)
+
+    def get_queryset(self, *args, **kwargs):
+        queryset = super().get_queryset(*args, **kwargs)
+        queryset = queryset.filter(sing_of_publication=True)
+        return queryset
 
 
 class BlogDetailView(DetailView):

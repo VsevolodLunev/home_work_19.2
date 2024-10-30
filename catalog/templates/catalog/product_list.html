@@ -61,18 +61,18 @@
     <div class="col-3">
         <div class="card mb-4 box-shadow">
             <div class="card-header">
-                <h4 class="my-0 font-weight-normal">{{ product.name }}</h4>
+                <h4 class="my-0 font-weight-normal">{{ product.product_name }}</h4>
             </div>
             <div class="card-body">
                 {% if product.preview %}
-                <img src="{{ product.preview | media_filter }}" class="card-img-top" alt="{{ product.name }}">
+                <img src="{{ product.preview | media_filter }}" class="card-img-top" alt="{{ product.product_name }}">
                 {% else %}
                 <img src="{% static 'photo/netphoto.jpg' %}" class="card-img-top" alt="Изобажение недоступно">
                 {% endif %}
 
                 <ul class="list-unstyled mt-3 mb-4 text-start m-3">
                     <li>Дата производства продукта - {{ product.manufactured_at }}</li>
-                    <li>Описание товара - {{ product.description|text_cropping }}</li>
+                    <li>Описание товара - {{ product.product_description|text_cropping }}</li>
                     <li>Категория - {{product.category}}</li>
                     <li>Цена - {{ product.price }} руб.</li>
                 </ul>

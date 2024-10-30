@@ -1,5 +1,7 @@
 from django.db import models
 
+NULLABLE = {"blank": True, "null": True}
+
 
 class Product(models.Model):
     manufactured_at = models.DateField(
@@ -15,10 +17,11 @@ class Product(models.Model):
         verbose_name="Дата записи в базу данных",
         auto_now_add=True
     )
-    description = models.TextField(
+    product_description = models.TextField(
         verbose_name="Описание товара",
-        blank=True,
+        help_text="Опишите продукт",
         null=True,
+        blank=True,
     )
     preview = models.ImageField(
         upload_to='img',
@@ -28,7 +31,7 @@ class Product(models.Model):
     )
     category = models.ForeignKey(
         "Category",
-        on_delete=models.PROTECT,
+         on_delete=models.PROTECT,
         verbose_name="Категория",
         help_text="Введите название категории",
         related_name="products",
@@ -37,17 +40,17 @@ class Product(models.Model):
     price = models.IntegerField(
         verbose_name="Цена", help_text="Цена в рублях"
     )
-    name = models.CharField(
-        max_length=100, verbose_name="Название продукта", help_text="Выберите продукт"
+    product_name = models.CharField(
+        max_length=100, verbose_name="Название продукта", help_text="Введите наименование продукта", blank=True,
     )
 
     def __str__(self):
-        return self.name
+        return self.product_name
 
     class Meta:
         verbose_name = "Продукт"
         verbose_name_plural = "Продукты"
-        ordering = ["category", "price"]
+        ordering = ["category", "product_name", "product_description", "price"]
 
 
 class Category(models.Model):
@@ -77,7 +80,7 @@ class Blog(models.Model):
     )
     slug = models.CharField(
         max_length=100,
-        verbose_name="содержимое",
+        verbose_name="Содержимое",
         unique=True,
     )
     content = models.TextField(
@@ -115,3 +118,33 @@ class Contact(models.Model):
     message = models.TextField(
         verbose_name="Сообщение"
     )
+
+
+class Version(models.Model):
+    product = models.ForeignKey(
+        Product, on_delete=models.CASCADE, related_name='versions'
+    )
+    number = models.PositiveIntegerField(
+        verbose_name="номер версии",
+    )
+    name = models.TextField(
+        max_length=100,
+        verbose_name="название версии"
+    )
+    current_version = models.BooleanField(
+        verbose_name="признак текущей версии",
+        default=True
+    )
+
+    class Meta:
+        verbose_name = "Версия"
+        verbose_name_plural = "Версии"
+
+    def save(self, *args, **kwargs):
+        """ Метод устанавливает все остальные версии продуктов как НЕ текущие"""
+        if self.current_version:
+            Version.objects.filter(product=self.product, current_version=True).update(current_version=False)
+        super().save(*args, **kwargs)
+
+    def __str__(self):
+        return str(self.number)
