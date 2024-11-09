@@ -1,110 +1,37 @@
 {% extends 'catalog/home.html'%}
-{% load static %}
 {% load my_tags %}
 {% block content %}
-<style>
-    .card-img-top {
-        width: 100%;
-        height: 250px;
-        object-fit: cover;
-    }
+<div class="album py-5 bg-body-tertiary">
+    <div class="container">
+      <div class="row row-cols-1 row-cols-sm-2 row-cols-md-3 g-3">
+        {% for product in object_list %}
 
-    .card {
-        min-height: 580px;
-    }
-
-    .card-body {
-        display: flex;
-        flex-direction: column;
-        justify-content: space-between;
-        height: 200px;
-    }
-
-    .card-text {
-        max-height: 80px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-    }
-
-    .card-body .btn {
-        align-self: flex-start;
-        margin-top: auto;
-    }
-
-    .pagination {
-        display: flex;
-        justify-content: center;
-        padding: 20px 0;
-    }
-
-    .pagination a, .pagination span {
-        margin: 0 5px;
-        padding: 8px 16px;
-        text-decoration: none;
-        background-color: #f4f4f4;
-        color: #007bff;
-        border-radius: 4px;
-    }
-
-    .pagination a:hover {
-        background-color: #007bff;
-        color: white;
-    }
-
-    .pagination .active {
-        background-color: #007bff;
-        color: white;
-    }
-</style>
-<div class="row text-center">
-    {% for product in object_list %}
-    <div class="col-3">
-        <div class="card mb-4 box-shadow">
-            <div class="card-header">
-                <h4 class="my-0 font-weight-normal">{{ product.product_name }}</h4>
-            </div>
+        <div class="col">
+          <div class="card shadow-sm">
+            <img src="{{ product.photo | media_filter }}">
             <div class="card-body">
-                {% if product.preview %}
-                <img src="{{ product.preview | media_filter }}" class="card-img-top" alt="{{ product.product_name }}">
-                {% else %}
-                <img src="{% static 'photo/netphoto.jpg' %}" class="card-img-top" alt="Изобажение недоступно">
-                {% endif %}
-
-                <ul class="list-unstyled mt-3 mb-4 text-start m-3">
-                    <li>Дата производства продукта - {{ product.manufactured_at }}</li>
-                    <li>Описание товара - {{ product.product_description|text_cropping }}</li>
-                    <li>Категория - {{product.category}}</li>
-                    <li>Цена - {{ product.price }} руб.</li>
-                </ul>
+              <h2 class="card-title">{{ product.product_name }}</h2>
+              <p class="card-text">Описание: {{ product.product_description | truncatechars:100 }}</p>
+              <div class="card-footer">
+                  {% if product.active_version %}
+                  <p>Текущая версия: {{ product.active_version.number }}
+                      Название: {{ product.active_version.name }}</p>
+                  {% else %}
+                  <p>Нет текущей версии</p>
+                  {% endif %}
+              </div>
+              <div class="d-flex justify-content-between align-items-center">
                 <div class="btn-group">
-                    <a href="{% url 'catalog:product_update' product.pk %}" class="btn btn-primary">Редактировать</a>
-                    <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-primary">Подробнее</a>
+                  <a class="btn btn-primary" href="{% url 'catalog:product_detail' product.pk %}" role="button">Посмотреть</a>
+                  <a class="btn btn-success" href="{% url 'catalog:product_update' product.pk %}" role="button">Редактировать</a>
+                  <a class="btn btn-danger" href="{% url 'catalog:product_delete' product.pk %}" role="button">Удалить</a>
                 </div>
             </div>
+          </div>
         </div>
+      </div>
+
+      {% endfor %}
     </div>
-    {% endfor %}
-    <div class="pagination">
-        {% if page_obj.has_previous %}
-        <a href="?page=1">&laquo; Первая</a>
-        <a href="?page={{ page_obj.previous_page_number }}">Предыдущая</a>
-        {% endif %}
-
-        {% for num in page_obj.paginator.page_range %}
-        {% if page_obj.number == num %}
-        <span class="active">{{ num }}</span>
-        {% else %}
-        <a href="?page={{ num }}">{{ num }}</a>
-        {% endif %}
-        {% endfor %}
-
-        {% if page_obj.has_next %}
-        <a href="?page={{ page_obj.next_page_number }}">Следующая</a>
-        <a href="?page={{ page_obj.paginator.num_pages }}">Последняя &raquo;</a>
-        {% endif %}
-    </div>
-
-
-</div>
 </div>
 {% endblock %}

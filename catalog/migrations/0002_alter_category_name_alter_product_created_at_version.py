@@ -28,7 +28,8 @@ class Migration(migrations.Migration):
                 ('number', models.PositiveIntegerField(verbose_name='номер версии')),
                 ('bane', models.TextField(max_length=100, verbose_name='название версии')),
                 ('current_version', models.BooleanField(default=True, verbose_name='признак текущей версии')),
-                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='versions', to='catalog.product')),
+                ('product', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='versions',
+                                              to='catalog.product')),
             ],
             options={
                 'verbose_name': 'Версия',

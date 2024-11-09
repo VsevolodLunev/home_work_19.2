@@ -12,7 +12,8 @@ class Migration(migrations.Migration):
     operations = [
         migrations.AlterModelOptions(
             name='product',
-            options={'ordering': ['category', 'product_name', 'product_description', 'price'], 'verbose_name': 'Продукт', 'verbose_name_plural': 'Продукты'},
+            options={'ordering': ['category', 'product_name', 'product_description', 'price'],
+                     'verbose_name': 'Продукт', 'verbose_name_plural': 'Продукты'},
         ),
         migrations.RemoveField(
             model_name='product',
@@ -30,6 +31,7 @@ class Migration(migrations.Migration):
         migrations.AddField(
             model_name='product',
             name='product_name',
-            field=models.CharField(blank=True, help_text='Введите наименование продукта', max_length=100, verbose_name='Название продукта'),
+            field=models.CharField(blank=True, help_text='Введите наименование продукта', max_length=100,
+                                   verbose_name='Название продукта'),
         ),
     ]

@@ -1,60 +1,89 @@
 from django.forms import inlineformset_factory
 from django.urls import reverse_lazy, reverse
+from django.shortcuts import render
+
 from django.utils.text import slugify
 from django.views.generic import ListView, TemplateView, CreateView, DetailView, UpdateView, DeleteView
 
-from catalog.forms import VersionForm
+from catalog.forms import VersionForm, ProductForm
 from catalog.models import Product, Contact, Blog, Version
+
+
+def contacts(request):
+    return render(request, "catalog/contacts.html")
 
 
 class ProductListView(ListView):
     model = Product
-    paginate_by = 4
 
-
-class ContactsListView(TemplateView):
-    template_name = "catalog/contact_list.html"
-
-    def get_context_data(self, **kwargs):
-        context = super().get_context_data(**kwargs)
-        context["object_list"] = Contact.objects.all()
-        return context
+    def get_context_data(self, *args, object_list=None, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        for product in context_data["object_list"]:
+            active_version = Version.objects.filter(
+                product=product, current_version=True
+            ).first()
+            product.active_version = active_version
+        return context_data
 
 
 class ProductDetailView(DetailView):
     model = Product
 
+    def get_object(self, queryset=None):
+        self.object = super().get_object(queryset)
+        self.object.view_counter += 1
+        self.object.save()
+        return self.object
 
-class CreateProductListView(CreateView):
+
+class ProductCreateView(CreateView):
     model = Product
-    fields = ("product_name", "price", "category", "preview", "product_description")
-    success_url = reverse_lazy('catalog:home')
+    form_class = ProductForm
+    success_url = reverse_lazy('catalog:product_list')
 
 
 class ProductUpdateView(UpdateView):
     model = Product
-    fields = ("product_name", "price", "category", "preview", "product_description")
-    success_url = reverse_lazy('catalog:home')
+    form_class = ProductForm
+    success_url = reverse_lazy('catalog:product_list')
+
+    def get_success_url(self):
+        return reverse("catalog:product_detail", args=[self.kwargs.get("pk")])
 
     def get_context_data(self, **kwargs):
         context_data = super().get_context_data(**kwargs)
-        VersionFormset = inlineformset_factory(Product, Version, VersionForm, extra=1, can_delete=True)
-        if self.request.method == 'POST':
-            context_data['formset'] = VersionFormset(self.request.POST, instance=self.object)
+        ProductFormset = inlineformset_factory(Product, Version, VersionForm, extra=1)
+        if self.request.method == "POST":
+            context_data["formset"] = ProductFormset(
+                self.request.POST, instance=self.object
+            )
         else:
-            context_data['formset'] = VersionFormset(instance=self.object)
+            context_data["formset"] = ProductFormset(instance=self.object)
         return context_data
 
     def form_valid(self, form):
         context_data = self.get_context_data()
-        formset = context_data['formset']
+        formset = context_data["formset"]
         if form.is_valid() and formset.is_valid():
             self.object = form.save()
             formset.instance = self.object
             formset.save()
             return super().form_valid(form)
         else:
-            return self.render_to_response(self.get_context_data(form=form, formset=formset))
+            return self.render_to_response(
+                self.get_context_data(form=form, formset=formset)
+            )
+
+
+class ProductDeleteView(DeleteView):
+    model = Product
+    success_url = reverse_lazy('catalog:product_list')
+
+
+class VersionCreateView(CreateView):
+    model = Version
+    form_class = VersionForm
+    success_url = reverse_lazy("catalog:product_list")
 
 
 class BlogListView(ListView):
@@ -100,7 +129,7 @@ class BlogUpdateView(UpdateView):
 
 class BlogDeleteView(DeleteView):
     model = Blog
-    success_url = reverse_lazy("catalog:blog_list")
+    success_url = reverse_lazy("c   atalog:blog_list")
 
     def get_object(self, queryset=None):
         slug = self.kwargs.get('slug')

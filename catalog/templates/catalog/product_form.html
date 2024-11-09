@@ -1,120 +1,41 @@
 {% extends "catalog/home.html" %}
-{% load my_tags %}
 {% block content %}
-
-<div class="container mt-5">
-    <h2 style="font-weight: normal;" class="pricing-header px-3 py-3 pt-md-5 pb-md-4 mx-auto text-center">
-        {% if object %}
-        Изменение продукта
-        {% else %}
-        Добавление продукта {% endif %}
-    </h2>
-
-    {% if form.errors %}
-    <div class="alert alert-danger">
-        <ul>
-            {% for field in form %}
-                {% for error in field.errors %}
-                <li>{{ field.label }}: {{ error }}</li>
-                {% endfor %}
-            {% endfor %}
-        </ul>
-    </div>
-    {% endif %}
-
-    <form method="POST" enctype="multipart/form-data" class="needs-validation" novalidate>
-        {% csrf_token %}
-        <div class="row">
-            <!-- Левая колонка: Основная форма продукта -->
-            <div class="col-md-6" id="product-form">
-                {% for field in form %}
-                <div class="mb-3">
-                    {{ field.label_tag }}
-                    {{ field }}
-                    {% for error in field.errors %}
-                    <div class="invalid-feedback">
-                        {{ error }}
-                    </div>
-                    {% endfor %}
-                </div>
-                {% endfor %}
-            </div>
-
-            <!-- Правая колонка: Formset для версий продукта -->
-            <div class="col-md-6" id="version-formset">
-                <h4>Версии продукта</h4>
-                {{ formset.management_form }}
-                {% for form in formset %}
-                <div class="card mb-3">
-                    <div class="card-body">
-                        {% if form.instance.pk %}
-                        <h5 class="card-title">Версия {{ forloop.counter }}</h5>
+<div class="container">
+    <div class="row">
+        <form class="row" method="post" enctype="multipart/form-data">
+            <div class="col-6">
+                <div class="card">
+                    {% if object %}
+                    <p class="card-text">Редактирование продукта</p>
                         {% else %}
-                        <h5 class="card-title">Новая версия</h5>
+                    <p class="card-text">Создание продукта</p>
                         {% endif %}
-
-                        {% for field in form %}
-                        <div class="mb-3">
-                            {{ field.label_tag }}
-                            {{ field }}
-                            {% for error in field.errors %}
-                            <div class="invalid-feedback">
-                                {{ error }}
-                            </div>
-                            {% endfor %}
-                        </div>
-                        {% endfor %}
-
-                        {% if form.instance.pk %}
-                        <div class="form-check">
-                            {{ form.DELETE }}
-                            {{ form.DELETE.label_tag }}
-                        </div>
-                        {% endif %}
+                    <div class="card-body">
+                        {% csrf_token %}
+                        {{ form.as_p }}
                     </div>
                 </div>
-                {% endfor %}
-                <button type="button" class="btn btn-secondary" id="add-version">Добавить версию</button>
+                <button type="submit" class="btn btn-primary">
+                    {% if object %}
+                        Сохранить изменения
+                    {% else %}
+                        Создать
+                    {% endif %}
+                </button>
+                <a class="btn btn-success" href="{% url 'catalog:product_list' %}" role="button">Назад</a>
             </div>
-        </div>
-
-        <button type="submit" class="btn btn-primary mt-3">
-            {% if object %}
-            Изменить {% else %}
-            Добавить продукт
-            {% endif %}
-        </button>
-    </form>
-</div>
-
-<!-- JavaScript для динамического добавления форм в formset -->
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script>
-    $(document).ready(function(){
-        var formset = $('#id_versions-TOTAL_FORMS');
-        var totalForms = parseInt(formset.val());
-
-        $('#add-version').click(function(){
-            var emptyForm = $('#empty-form').html().replace(/__prefix__/g, totalForms);
-            $('#version-formset').append(emptyForm);
-            formset.val(totalForms + 1);
-            totalForms += 1;
-        });
-    });
-</script>
-
-<!-- Шаблон пустой формы для динамического добавления -->
-<div id="empty-form" style="display: none;">
-    <div class="card mb-3">
-        <div class="card-body">
-            <h5 class="card-title">Новая версия</h5>
-            {% for field in formset.empty_form %}
-            <div class="mb-3">
-                {{ field.label_tag }}
-                {{ field }}
+            <div class="col-6">
+                <div class="card">
+                    <p class="card-text">Выбор из версий продукта</p>
+                    <div class="card-body">
+                        {{ formset.management_form }}
+                        {% for form in formset.forms %}
+                        {{ form.as_p }}
+                        {% endfor %}
+                    </div>
+                </div>
             </div>
-            {% endfor %}
-        </div>
+        </form>
     </div>
 </div>
 {% endblock %}
