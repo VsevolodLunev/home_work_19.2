@@ -1,30 +1,17 @@
 from django import template
+from django.conf import settings
 
 register = template.Library()
 
 
-@register.filter()
-def media_filter(data):
-    if data:
-        return f"/media/{data}"
-    return "#"
+@register.simple_tag()
+def mediafile(value):
+    """Тег для реобразование пути в полный путь для доступа к медиафайлу."""
+    return f'/media/{value}'
 
 
 @register.filter()
-def text_cropping(value, length=100):
-    if value is None:
-        return ""  # или какое-то значение по умолчанию
-    if len(value) > length:
-        return value[:length] + "..."
-    return value
-
-
-@register.filter()
-def add_class(value, arg):
-    """
-    Фильтр позвляет динамически добавлять CSS-классы к виджетам полей формы в Django-шаблоне
-    """
-    try:
-        return value.as_widget(attrs={'class': arg})
-    except AttributeError:
-        return value
+def media_url(value):
+    """Фильтр для преобразования пути в полный путь для доступа к медиафайлу."""
+    media_root = settings.MEDIA_URL
+    return f'{media_root}{value}'

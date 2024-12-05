@@ -1,136 +1,117 @@
-from django.forms import inlineformset_factory
-from django.urls import reverse_lazy, reverse
-from django.shortcuts import render
+from django.contrib.auth.mixins import LoginRequiredMixin
+from django.http import Http404
+from django.shortcuts import get_object_or_404
+from django.urls import reverse_lazy
+from django.views.generic import TemplateView, DetailView, CreateView, ListView, UpdateView, DeleteView
 
-from django.utils.text import slugify
-from django.views.generic import ListView, TemplateView, CreateView, DetailView, UpdateView, DeleteView
-
-from catalog.forms import VersionForm, ProductForm
-from catalog.models import Product, Contact, Blog, Version
+from catalog.forms import ProductForm, VersionForm
+from catalog.models import Product, Version
 
 
-def contacts(request):
-    return render(request, "catalog/contacts.html")
+class IndexView(TemplateView):
+    template_name = 'catalog/catalog_list.html'
+    extra_context = {
+        'title': 'Главная страница'
+    }
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        context_data['object_list'] = Product.objects.all().order_by('-id')[:5]
+        return context_data
+
+
+class ContactView(TemplateView):
+    template_name = 'catalog/contact.html'
+
+    def post(self, request, *args, **kwargs):
+        name = request.POST.get('name')
+        email = request.POST.get('email')
+        message = request.POST.get('message')
+        print(f'Новое сообщение от пользователя {name}({email}): {message}')
+        return self.render_to_response({'title': 'Контакты'})
+
+
+class ProductDetailView(LoginRequiredMixin, DetailView):
+    model = Product
+    template_name = 'catalog/product_detail.html'
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        queryset = queryset.filter(pk=self.kwargs.get('pk'))
+        return queryset
+
+    def get_context_data(self, **kwargs):
+        context_data = super().get_context_data(**kwargs)
+        product_item = Product.objects.get(pk=self.kwargs.get('pk'))
+        context_data['title'] = product_item.product_name
+        if product_item.version_set.filter(is_active=True):
+            context_data['version'] = product_item.version_set.filter(is_active=True).last()
+        else:
+            context_data['version'] = None
+        return context_data
+
+
+class ProductCreateView(LoginRequiredMixin, CreateView):
+    model = Product
+    form_class = ProductForm
+    success_url = reverse_lazy('catalog:list_product')
+
+    def form_valid(self, form):
+        new_product = form.save()
+        new_product.owner = self.request.user
+        new_product.save()
+        return super().form_valid(form)
 
 
 class ProductListView(ListView):
     model = Product
-
-    def get_context_data(self, *args, object_list=None, **kwargs):
-        context_data = super().get_context_data(**kwargs)
-        for product in context_data["object_list"]:
-            active_version = Version.objects.filter(
-                product=product, current_version=True
-            ).first()
-            product.active_version = active_version
-        return context_data
+    extra_context = {
+        'title': 'Список товаров'
+    }
 
 
-class ProductDetailView(DetailView):
+class ProductUpdateView(LoginRequiredMixin, UpdateView):
     model = Product
+    form_class = ProductForm
+    success_url = reverse_lazy('catalog:list_product')
 
     def get_object(self, queryset=None):
-        self.object = super().get_object(queryset)
-        self.object.view_counter += 1
-        self.object.save()
-        return self.object
+        product_pk = self.kwargs.get('pk')
+        product = get_object_or_404(Product, pk=product_pk)
+        if product.owner != self.request.user and not self.request.user.is_staff:
+            raise Http404
+        return product
 
 
-class ProductCreateView(CreateView):
+class ProductDeleteView(LoginRequiredMixin, DeleteView):
     model = Product
-    form_class = ProductForm
-    success_url = reverse_lazy('catalog:product_list')
+    success_url = reverse_lazy('catalog:list_product')
+
+    def get_object(self, queryset=None):
+        product_pk = self.kwargs.get('pk')
+        product = get_object_or_404(Product, pk=product_pk)
+        if product.owner != self.request.user and not self.request.user.is_staff:
+            raise Http404
+        return product
 
 
-class ProductUpdateView(UpdateView):
-    model = Product
-    form_class = ProductForm
-    success_url = reverse_lazy('catalog:product_list')
-
-    def get_success_url(self):
-        return reverse("catalog:product_detail", args=[self.kwargs.get("pk")])
-
-    def get_context_data(self, **kwargs):
-        context_data = super().get_context_data(**kwargs)
-        ProductFormset = inlineformset_factory(Product, Version, VersionForm, extra=1)
-        if self.request.method == "POST":
-            context_data["formset"] = ProductFormset(
-                self.request.POST, instance=self.object
-            )
-        else:
-            context_data["formset"] = ProductFormset(instance=self.object)
-        return context_data
-
-    def form_valid(self, form):
-        context_data = self.get_context_data()
-        formset = context_data["formset"]
-        if form.is_valid() and formset.is_valid():
-            self.object = form.save()
-            formset.instance = self.object
-            formset.save()
-            return super().form_valid(form)
-        else:
-            return self.render_to_response(
-                self.get_context_data(form=form, formset=formset)
-            )
-
-
-class ProductDeleteView(DeleteView):
-    model = Product
-    success_url = reverse_lazy('catalog:product_list')
-
-
-class VersionCreateView(CreateView):
+class VersionCreateView(LoginRequiredMixin, CreateView):
     model = Version
     form_class = VersionForm
-    success_url = reverse_lazy("catalog:product_list")
+    template_name = 'catalog/version_form.html'  # добавлено
+    success_url = reverse_lazy('catalog:list_product')
 
 
-class BlogListView(ListView):
-    model = Blog
-
-    def get_queryset(self, *args, **kwargs):
-        queryset = super().get_queryset(*args, **kwargs)
-        queryset = queryset.filter(sing_of_publication=True)
-        return queryset
+class VersionDetailView(DetailView):
+    model = Version
 
 
-class BlogDetailView(DetailView):
-    model = Blog
-
-    def get_object(self, queryset=None):
-        self.object = super().get_object(queryset)
-        self.object.count_views += 1
-        self.object.save()
-        return self.object
+class VersionUpdateView(LoginRequiredMixin, UpdateView):
+    model = Version
+    form_class = VersionForm
+    success_url = reverse_lazy('catalog:list_product')
 
 
-class BlogCreateView(CreateView):
-    model = Blog
-    fields = ("heading", "content", "preview", "count_views")
-    success_url = reverse_lazy('catalog:blog_list')
-
-    def form_valid(self, form):
-        if form.is_valid():
-            obj = form.save(commit=False)
-            obj.slug = slugify(obj.heading)
-            obj.save()
-        return super().form_valid(form)
-
-
-class BlogUpdateView(UpdateView):
-    model = Blog
-    fields = ("heading", "content", "preview")
-    success_url = reverse_lazy("catalog:blog_list")
-
-    def get_success_url(self):
-        return reverse('catalog:detail_blog', args=[self.kwargs.get('slug')])
-
-
-class BlogDeleteView(DeleteView):
-    model = Blog
-    success_url = reverse_lazy("c   atalog:blog_list")
-
-    def get_object(self, queryset=None):
-        slug = self.kwargs.get('slug')
-        return Blog.objects.get(slug=slug)
+class VersionDeleteView(LoginRequiredMixin, DeleteView):
+    model = Version
+    success_url = reverse_lazy('catalog:list_product')
