@@ -1,10 +1,11 @@
-from django.contrib.auth.mixins import LoginRequiredMixin
-from django.http import Http404
-from django.shortcuts import get_object_or_404
-from django.urls import reverse_lazy
+from django.contrib.auth.decorators import permission_required
+from django.contrib.auth.mixins import LoginRequiredMixin, UserPassesTestMixin
+from django.core.exceptions import PermissionDenied
+from django.shortcuts import get_object_or_404, redirect
+from django.urls import reverse_lazy, reverse
 from django.views.generic import TemplateView, DetailView, CreateView, ListView, UpdateView, DeleteView
 
-from catalog.forms import ProductForm, VersionForm
+from catalog.forms import ProductForm, VersionForm, ProductModeratorForm
 from catalog.models import Product, Version
 
 
@@ -51,6 +52,15 @@ class ProductDetailView(LoginRequiredMixin, DetailView):
         return context_data
 
 
+@permission_required('catalog.can_canceled_publication')
+def toggle_publish_product(request, pk):
+    product = get_object_or_404(Product, pk=pk)
+
+    product.is_published = not product.is_published
+    product.save()
+    return redirect(reverse('catalog:product', args=[pk]))
+
+
 class ProductCreateView(LoginRequiredMixin, CreateView):
     model = Product
     form_class = ProductForm
@@ -70,29 +80,50 @@ class ProductListView(ListView):
     }
 
 
-class ProductUpdateView(LoginRequiredMixin, UpdateView):
+class ProductUpdateView(LoginRequiredMixin, UserPassesTestMixin, UpdateView):
     model = Product
     form_class = ProductForm
     success_url = reverse_lazy('catalog:list_product')
 
-    def get_object(self, queryset=None):
-        product_pk = self.kwargs.get('pk')
-        product = get_object_or_404(Product, pk=product_pk)
-        if product.owner != self.request.user and not self.request.user.is_staff:
-            raise Http404
-        return product
+    def test_func(self):
+        product = self.get_object()
+        user = self.request.user
+
+        if user == product.owner:
+            return True
+
+        required_perms = [
+            'catalog.can_edit_description',
+            'catalog.can_edit_category',
+            'catalog.can_canceled_publication'
+        ]
+
+        return all(user.has_perm(perm) for perm in required_perms)
+
+    def get_form_class(self):
+        user = self.request.user
+        if user == self.object.owner:
+            return ProductForm
+
+        required_perms = [
+            'catalog.can_edit_description',
+            'catalog.can_edit_category',
+            'catalog.can_canceled_publication'
+        ]
+
+        if all(user.has_perm(perm) for perm in required_perms):
+            return ProductModeratorForm
+
+        raise PermissionDenied
 
 
-class ProductDeleteView(LoginRequiredMixin, DeleteView):
+class ProductDeleteView(LoginRequiredMixin, UserPassesTestMixin,  DeleteView):
     model = Product
     success_url = reverse_lazy('catalog:list_product')
 
-    def get_object(self, queryset=None):
-        product_pk = self.kwargs.get('pk')
-        product = get_object_or_404(Product, pk=product_pk)
-        if product.owner != self.request.user and not self.request.user.is_staff:
-            raise Http404
-        return product
+    def test_func(self):
+        product = self.get_object()
+        return product.owner == self.request.user or self.request.user.has_perm('catalog.delete_product')
 
 
 class VersionCreateView(LoginRequiredMixin, CreateView):
