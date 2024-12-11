@@ -23,5 +23,5 @@ urlpatterns = [
     path('product/create_version/', VersionCreateView.as_view(), name='version_create'),
     path('edit_version/<int:pk>', VersionUpdateView.as_view(), name='edit_version'),
     path('delete_version/<int:pk>', VersionDeleteView.as_view(), name='delete_version'),
-    path('toggle-published-product/<int:pk>/', views.toggle_publish_product, name='toggle_publish_product')
+    path('toggle-published-product/<int:pk>/', views.toggle_publish_product, name='toggle_publish_product'),
 ] + static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
