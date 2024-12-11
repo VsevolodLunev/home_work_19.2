@@ -5,8 +5,9 @@ from django.shortcuts import get_object_or_404, redirect
 from django.urls import reverse_lazy, reverse
 from django.views.generic import TemplateView, DetailView, CreateView, ListView, UpdateView, DeleteView
 
-from catalog.forms import ProductForm, VersionForm, ProductModeratorForm
-from catalog.models import Product, Version
+from catalog.forms import ProductForm, VersionForm, ProductModeratorForm, CategoryForm
+from catalog.models import Product, Version, Category
+from catalog.services import get_category_from_cache
 
 
 class IndexView(TemplateView):
@@ -146,3 +147,16 @@ class VersionUpdateView(LoginRequiredMixin, UpdateView):
 class VersionDeleteView(LoginRequiredMixin, DeleteView):
     model = Version
     success_url = reverse_lazy('catalog:list_product')
+
+
+class CategoryCreateView(CreateView, LoginRequiredMixin):
+    model = Category
+    form_class = CategoryForm
+    success_url = reverse_lazy("catalog:list_product")
+
+
+class CategoryListView(ListView, LoginRequiredMixin):
+    model = Category
+
+    def get_queryset(self):
+        return get_category_from_cache()

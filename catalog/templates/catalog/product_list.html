@@ -21,7 +21,7 @@
                 <li>Статус: {{ product.is_published|yesno:"Опубликован,Не опубликован" }}</li>
             </ul>
             {% if user.is_authenticated %}
-                <a href="{% url 'catalog:product' product.pk %}" class="btn btn-outline-primary"
+                <a href="{% url 'catalog:product_detail' product.pk %}" class="btn btn-outline-primary"
                    role="button">Просмотреть</a>
                 {% if perms.catalog.can_edit_category and perms.catalog.can_edit_description or user == product.owner %}
                     <a href="{% url 'catalog:edit_product' product.pk %}" class="btn btn-outline-primary"
